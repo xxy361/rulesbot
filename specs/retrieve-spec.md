@@ -55,7 +55,11 @@ Results should be ordered from most to least relevant (lowest to highest distanc
 *Sketch out what one item in your return list looks like as a concrete example. Where does each field come from in the query results?*
 
 ```
-[your answer here]
+{
+    "text": "On your turn, you may either draw two cards or claim a route...",   # from documents[0][i]
+    "game": "Ticket to Ride",                                                    # from metadatas[0][i]["game"]
+    "distance": 0.41,                                                            # from distances[0][i]
+}
 ```
 
 ---
@@ -65,7 +69,7 @@ Results should be ordered from most to least relevant (lowest to highest distanc
 *`_collection.query()` returns nested lists. Describe what index you need to access to get the actual list of results for a single query, and why the nesting exists.*
 
 ```
-[your answer here]
+query() is built to handle multiple queries at once, so it returns one inner list per query. results["documents"] is list[list[str]]. Since one query is sent,  results are at index [0]: results["documents"][0].
 ```
 
 ---
@@ -75,7 +79,7 @@ Results should be ordered from most to least relevant (lowest to highest distanc
 *Will you filter out results above a certain distance score, or return all `n_results` regardless of how relevant they are? What are the tradeoffs of each approach?*
 
 ```
-[your answer here]
+Using n_results is the easiest and always gives LLM something, but it might feed garbarge context, where distance score is high but still being top n-th. This can be avoided using max distance cutoff, but might return less than n or even empty results. 
 ```
 
 ---
@@ -85,7 +89,9 @@ Results should be ordered from most to least relevant (lowest to highest distanc
 *How does your implementation behave when: (a) the collection is empty, (b) the query matches no chunks well, (c) the query matches chunks from multiple games?*
 
 ```
-[your answer here]
+(a) Return empty list []
+(b) Poor match still returns 3 results, just with high distances
+(c) Results naturally interleave games, as they are ranked purely by distance. The "game" field would ensure the generated response points to the right game.
 ```
 
 ---
@@ -97,14 +103,15 @@ Results should be ordered from most to least relevant (lowest to highest distanc
 **Test query and top result returned:**
 
 ```
-Query: [your test query]
-Top result game: [game name]
-Distance score: [score]
-Does it make sense? [yes / no / explain]
+Query: How do you set up the board in Catan?
+Top result game: Catan
+Distance score: 0.581
+Does it make sense? yes
 ```
 
 **One thing about the query results that surprised you:**
 
 ```
-[your answer here]
+Trying the same query returns different results. Occassionly getting different games or a result like:
+[Catan] (dist: 0.380) CATAN — OFFICIAL RULES SUMMARY
 ```

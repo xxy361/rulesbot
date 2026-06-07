@@ -116,11 +116,14 @@ handle these cases better, at the cost of more implementation complexity.
 **Actual chunk count produced across all 8 rule books:**
 
 ```
-[your answer here]
+Ingesting rule documents...
+Loaded 8 rule document(s): ['Catan', 'Clue', 'Codenames', 'Monopoly', 'Pandemic', 'Risk', 'Ticket To Ride', 'Uno']
+Stored 149 total chunks in the vector database.
+Ingestion complete. 149 chunks stored.
 ```
 
 **One thing that surprised you or didn't match your expectations:**
 
 ```
-[your answer here]
+None
 ```

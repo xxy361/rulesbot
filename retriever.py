@@ -68,5 +68,28 @@ def retrieve(query, n_results=N_RESULTS):
     if _collection.count() == 0:
         return []
 
-    # Your implementation here.
-    return []
+    results = _collection.query(
+        query_texts=[query],
+        n_results=n_results,
+        include=["documents", "metadatas", "distances"],
+    )
+
+    # query() returns one inner list per query; we sent one query, so use [0].
+    documents = results["documents"][0]
+    metadatas = results["metadatas"][0]
+    distances = results["distances"][0]
+
+    chunks = [
+        {
+            "text": documents[i],
+            "game": metadatas[i]["game"],
+            "distance": distances[i],
+        }
+        for i in range(len(documents))
+    ]
+
+    # TEMP: verify retrieval in the terminal — remove before Milestone 3.
+    for chunk in chunks:
+        print(f"[{chunk['game']}] (dist: {chunk['distance']:.3f}) {chunk['text'][:80]}...")
+
+    return chunks

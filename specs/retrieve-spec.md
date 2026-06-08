@@ -45,7 +45,14 @@ Results should be ordered from most to least relevant (lowest to highest distanc
 *Describe how you will use `_collection.query()` to find relevant chunks. What arguments will you pass, and why?*
 
 ```
-[your answer here]
+_collection.query()  takes:
+    - query_texts : a list containing your query string
+    - n_results   : how many results to return
+    - include     : what to return — use ["documents", "metadatas", "distances"]
+So we should pass:
+    query_texts=[query]
+    n_results=n_results
+    include=["documents", "metadatas", "distances"]
 ```
 
 ---
@@ -106,7 +113,7 @@ Using n_results is the easiest and always gives LLM something, but it might feed
 Query: How do you set up the board in Catan?
 Top result game: Catan
 Distance score: 0.581
-Does it make sense? yes
+Does it make sense? [yes / no]: yes
 ```
 
 **One thing about the query results that surprised you:**

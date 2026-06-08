@@ -29,11 +29,43 @@ def generate_response(query, retrieved_chunks):
 
     Return the response as a plain string.
     """
-    if not retrieved_chunks:
-        return (
-            "I couldn't find anything relevant in the loaded rule books. "
-            "Try rephrasing your question — or check that your ingestion pipeline is working."
-        )
+    
+    fallback = (
+        "I couldn't find anything relevant in the loaded rule books. "
+        "Try rephrasing your question — or check that your ingestion pipeline is working."
+    )
 
-    # Your implementation here.
-    return "⚙️ Response generation not yet implemented. Complete Milestone 3 to activate answers."
+    if not retrieved_chunks:
+        return fallback
+
+    # Filter out weak matches
+    relevant = [c for c in retrieved_chunks if c["distance"] <= 0.6]
+    if not relevant:
+        return fallback
+
+    # Format each chunk as a labeled block, separated by a delimiter
+    context = "\n---\n".join(
+        f"[Source: {c['game']}]\n{c['text']}" for c in relevant
+    )
+
+    system_message = (
+        "You are RulesBot, a board game rules assistant. Answer the user's "
+        "question using ONLY the rule text provided. Do not use any prior "
+        "knowledge about board games.\n\n"
+        "Use the game name given in the source labels. If your answer draws "
+        "on rules from a specific game, begin or end with a clear citation of "
+        'that game (e.g. "According to the Catan rules: ..."). If multiple '
+        "games' rules appear in the context, only cite the one(s) you "
+        "actually used."
+    )
+
+    user_message = f"{query}\n\nContext:\n{context}"
+
+    response = _client.chat.completions.create(
+        model=LLM_MODEL,
+        messages=[
+            {"role": "system", "content": system_message},
+            {"role": "user", "content": user_message},
+        ],
+    )
+    return response.choices[0].message.content

@@ -42,7 +42,8 @@ Returns a fallback string (not an error) when `retrieved_chunks` is empty.
 *How will you format the retrieved chunks before passing them to the LLM? Describe the structure — not the code. Consider: will you label chunks by game? Include distance scores? Separate chunks with delimiters?*
 
 ```
-[your answer here]
+Each chunk is rendered as a labeled block: a header line naming the game, followed by the chunk text. Blocks are separated by a clear delimiter.
+Example structure: [Source: Catan]\n<chunk text>\n---\n[Source: Ticket to Ride]\n<chunk text>.
 ```
 
 ---
@@ -52,7 +53,7 @@ Returns a fallback string (not an error) when `retrieved_chunks` is empty.
 *Write the exact system prompt instruction you will use to prevent the model from answering beyond the retrieved text. This is the most important design decision in this function.*
 
 ```
-[your answer here]
+You are RulesBot, a board game rules assistant. Answer the user's question using ONLY the rule text provided. Do not use any prior knowledge about board games.
 ```
 
 ---
@@ -62,7 +63,7 @@ Returns a fallback string (not an error) when `retrieved_chunks` is empty.
 *Write the exact instruction you will use to tell the model to identify which game its answer comes from.*
 
 ```
-[your answer here]
+Use the game name given in the source labels. If your answer draws on rules from a specific game, begin or end with a clear citation of that game (e.g. "According to the Catan rules: ..."). If multiple games' rules appear in the context, only cite the one(s) you actually used.
 ```
 
 ---
@@ -72,7 +73,8 @@ Returns a fallback string (not an error) when `retrieved_chunks` is empty.
 *What should the response say when the answer isn't found in the loaded rule books? Write the exact fallback message.*
 
 ```
-[your answer here]
+I couldn't find anything in the loaded rule books that answers that question. Make sure the relevant game's rules have been
+added, and try rephrasing your question with more specific terms.
 ```
 
 ---
@@ -82,7 +84,7 @@ Returns a fallback string (not an error) when `retrieved_chunks` is empty.
 *`retrieved_chunks` may include chunks with high distance scores (weak relevance). Will you filter these out before building context, pass them all in, or handle them another way? What are the tradeoffs?*
 
 ```
-[your answer here]
+Filter out chunks with distance above a threshold (~0.5, per the cosine guidance in the system design) before building context. If all chunks are filtered out, return the fallback message rather than feeding weak context to the model. The tradeoff is that filtering could drop a borderline-relevant chunk. However, a confident wrong answer is worse than no answer.
 ```
 
 ---
@@ -92,7 +94,7 @@ Returns a fallback string (not an error) when `retrieved_chunks` is empty.
 *Describe how you will structure the messages list for the API call — what goes in the system message vs. the user message?*
 
 ```
-[your answer here]
+The system message contains the grounding and citation instructions. The user message contains the user's actual question and the formatted context following the user's question.
 ```
 
 ---
@@ -104,14 +106,14 @@ Returns a fallback string (not an error) when `retrieved_chunks` is empty.
 **Test query and response:**
 
 ```
-Query: [your test query]
-Response: [abbreviated response]
-Correctly grounded? [yes / no]
-Cited the right game? [yes / no]
+Query: "How does the Spymaster give clues in Codenames?"
+Response: "According to the Codenames rules: The Spymaster gives clues by saying a word followed by a number. The word hints at the meaning of one or more codenames the Spymaster wants their team to guess, and the number tells the team how many codenames are related to that clue."
+Correctly grounded? [yes / no]: yes
+Cited the right game? [yes / no]: yes
 ```
 
 **One thing you changed from your original spec after seeing the actual output:**
 
 ```
-[your answer here]
+I changed the distance filter from 0.5 to 0.6, because the question "How do you set up the board in Catan" doesn't generate a response. The queried chunk texts have distance 0.581 and 0.592, which was filtered out by the 0.5 filter.
 ```
